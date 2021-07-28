@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.stu.mapper.LeaveMapper">
+
+	<select id="queryAll" resultType="Leave">
+		select * from t_leave
+	</select>
+
+	<sql id="whereSql">
+		<where>
+			<if test="content != null and content != ''">
+				and tc.content like concat('%',#{content},'%')
+			</if>
+			<if test="auditid != null ">
+				and tc.auditid = #{auditid}
+			</if>
+			<if test="userid != null ">
+				and tc.userid = #{userid}
+			</if>
+			<if test="status != null and status != 3">
+				and tc.status = #{status}
+			</if>
+			<if test="status != null and status == 3">
+				and (tc.status = 1 or tc.status = 2)
+			</if>
+		</where>
+	</sql>
+
+	<!--分页-->
+	<select id="queryTotal" parameterType="LeaveQuery"
+			resultType="java.lang.Long">
+		select count(*)
+		from t_leave tc
+		join t_user u on tc.userid  = u.id
+		join t_user t on tc.auditid = t.id
+		<include refid="whereSql"></include>
+	</select>
+
+	<select id="queryData" parameterType="LeaveQuery"
+			resultMap="LeaveMap">
+		select tc.*,u.id uid, u.username uname, t.id tid,t.username tname
+		from t_leave tc
+		join t_user u on tc.userid  = u.id
+		join t_user t on tc.auditid = t.id
+		<include refid="whereSql"></include>
+		order by tc.id desc
+		limit #{offset},#{pageSize}
+	</select>
+	<resultMap id="LeaveMap" type="Leave">
+		<id property="id" column="id"></id>
+
+		<result property="leaveUser.id" column="uid"></result>
+		<result property="leaveUser.username" column="uname"></result>
+
+		<result property="auditUser.id" column="tid"></result>
+		<result property="auditUser.username" column="tname"></result>
+	</resultMap>
+
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+

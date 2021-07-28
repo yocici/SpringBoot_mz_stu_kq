@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>后台管理系统模板</title>
+    <link rel="icon" href="favicon.ico" type="image/ico">
+    <meta name="keywords" content="模板">
+    <meta name="description" content="后台管理系统">
+    <meta name="author" content="SoulCoder">
+    <div th:include="~{views/common/include :: cssStyle }"></div>
+</head>
+<body>
+<div class="coder-layout-web">
+    <div class="coder-layout-container">
+        <!--左侧导航-->
+        <div th:include="~{views/common/include :: #asideStyle }"></div>
+        <!--End 左侧导航-->
+        <!--头部信息-->
+        <div th:include="~{views/common/include :: #headerStyle }"></div>
+        <!--End 头部信息-->
+        <!--页面主要内容-->
+        <main class="coder-layout-content">
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-toolbar clearfix">
+
+
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="leaveTable" ></table>
+                                </div>
+                            </div>
+
+
+
+
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+        <!--End 页面主要内容-->
+    </div>
+</div>
+
+<div th:include="~{views/common/include :: #jsStyle}"></div>
+<script type="text/javascript"  th:src="@{/static/js/jquery.serialize-object.min.js}"></script>
+
+<!--图表插件-->
+<script type="text/javascript">
+
+    $(document).ready(function(e){
+        $('#leaveTable').bootstrapTable({
+            url: '/leave/auditRecordlistpage',                      //请求后台的URL（*）
+            method: 'GET',                      //请求方式（*）
+            striped: true,                      //是否显示行间隔色
+            cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+            pagination: true,                   //是否显示分页（*）
+            sortable: true,                     //是否启用排序
+            sortOrder: "asc",                   //排序方式
+            sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+            pageNumber: 1,                      //初始化加载第一页，默认第一页,并记录
+            pageSize: 10,                     //每页的记录行数（*）
+            pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+            iconsPrefix: 'mdi', // 自定义表格右上角的图标，这个必须要定义，因为不是官方模板，icon图标样式名字不同会导致图标无法显示
+            icons:  {
+                refresh: 'mdi-refresh',              // 刷新图标
+                columns: 'mdi-format-list-bulleted', // 列图标
+                toggleOff: 'mdi-toggle-switch-off',  // 切换光
+                toggleOn: 'mdi-toggle-switch',       // 切换开
+                detailOpen: 'mdi-plus',              // 详情开
+                detailClose: 'mdi-minus',            // 详情光
+                fullscreen: 'mdi-fullscreen'         // 全屏图标
+            },
+            search: false,                      //是否显示表格搜索
+            strictSearch: true,
+            showColumns: true,                  //是否显示所有的列（选择显示的列）
+            showRefresh: true,                  //是否显示刷新按钮
+            minimumCountColumns: 2,             //最少允许的列数
+            clickToSelect: true,                //是否启用点击选中行
+            //height: 500,                      //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+            uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+            showToggle: true,                   //是否显示详细视图和列表视图的切换按钮
+            cardView: false,                    //是否显示详细视图
+            detailView: false,                  //是否显示父子表
+            singleSelect: false, //开启单选,想要获取被选中的行数据必须要有该参数
+            queryParams : function(params) {//上传服务器的参数
+                var temp = {
+                    offset :params.offset + 0,// SQL语句起始索引
+                    page : params.limit
+                };
+                return temp;
+            },
+            columns: [
+                {
+                    align : 'center',
+                    checkbox: true
+                },{
+                    field: 'id',
+                    title: '请假编号'
+                }, {
+                    field: 'leaveUser.username',
+                    title: '申请人'
+                }, {
+                    field: 'auditUser.username',
+                    title: '审核人'
+                }, {
+                    field: 'content',
+                    title: '请假原因',
+                    align: 'center'
+                }, {
+                    field: 'num',
+                    title: '请假天数'
+                },{
+                    field: 'createTime',
+                    title: '申请时间'
+                },{
+                    field: 'auditInfo',
+                    title: '审核意见'
+                },{
+                    field: 'status',
+                    title: '状态',
+                    formatter:function(value,row,index){
+                        if(value==0){
+                            return "0-已申请"
+                        }else if(value == 1){
+                            return "1-已审批"
+                        }else if(value ==2){
+                            return "2-驳回"
+                        }
+                    }
+                },{
+                    field: 'auditTime',
+                    title: '审批时间'
+                }]
+        });
+
+
+    })
+
+
+
+
+
+    $(document).ready(function(e) {
+
+        $("button,a").on('click',function(){
+            //获取到 a标签里面配置 data-method
+            var methodName = $(this).data('method');
+            if(methodName){
+                doMethod[methodName]();
+            }
+        });
+        var doMethod = {
+
+        }
+
+    })
+
+
+
+
+
+
+
+
+</script>
+
+<style>
+    .my-container {
+        float: left;
+        display: inline-block;
+        margin-right:30px;
+    }
+
+    .myLabel-content ,.myText-content,.myBtn-content{
+        float: left;
+        display: inline-block;
+        line-height: 40px;
+        margin-left: 10px;
+    }
+    .myLabel-content,.myText-content input[type='text'],.myBtn-content .btn {
+        height: 38px;
+        font-size: 15px;
+    }
+    .myBtn-content .btn {
+        margin-bottom: 10px;
+        margin-right: 20px;
+    }
+</style>
+
+
+
+</body>
+</html>

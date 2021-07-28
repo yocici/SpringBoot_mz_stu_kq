@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+                 xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>后台管理系统模板</title>
+    <link rel="icon" href="favicon.ico" type="image/ico">
+    <meta name="keywords" content="模板">
+    <meta name="description" content="后台管理系统">
+    <meta name="author" content="SoulCoder">
+    <div th:include="~{views/common/include :: cssStyle }"></div>
+</head>
+<body>
+<div class="coder-layout-web">
+    <div class="coder-layout-container">
+        <!--左侧导航-->
+        <div th:include="~{views/common/include :: #asideStyle }"></div>
+        <!--End 左侧导航-->
+        <!--头部信息-->
+        <div th:include="~{views/common/include :: #headerStyle }"></div>
+        <!--End 头部信息-->
+        <!--页面主要内容-->
+        <main class="coder-layout-content">
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-toolbar clearfix">
+                                <div id="toolbar">
+
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="auditLeaveTable" ></table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+        <!--End 页面主要内容-->
+    </div>
+</div>
+
+<div th:include="~{views/common/include :: #jsStyle}"></div>
+<script type="text/javascript"  th:src="@{/static/js/jquery.serialize-object.min.js}"></script>
+
+<!--图表插件-->
+<script type="text/javascript">
+
+    $(document).ready(function(e){
+        $('#auditLeaveTable').bootstrapTable({
+                      url: '/myAudit',                      //请求后台的URL（*）
+                      method: 'GET',                      //请求方式（*）
+                       //toolbar: '#toolbar',              //工具按钮用哪个容器
+                      striped: true,                      //是否显示行间隔色
+                      cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                      pagination: true,                   //是否显示分页（*）
+                      sortable: true,                     //是否启用排序
+                      sortOrder: "asc",                   //排序方式
+                      sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                      pageNumber: 1,                      //初始化加载第一页，默认第一页,并记录
+                      pageSize: 10,                     //每页的记录行数（*）
+                      pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                      iconsPrefix: 'mdi', // 自定义表格右上角的图标，这个必须要定义，因为不是官方模板，icon图标样式名字不同会导致图标无法显示
+                      icons:  {
+                            refresh: 'mdi-refresh',              // 刷新图标
+                            columns: 'mdi-format-list-bulleted', // 列图标
+                            toggleOff: 'mdi-toggle-switch-off',  // 切换光
+                            toggleOn: 'mdi-toggle-switch',       // 切换开
+                            detailOpen: 'mdi-plus',              // 详情开
+                            detailClose: 'mdi-minus',            // 详情光
+                            fullscreen: 'mdi-fullscreen'         // 全屏图标
+                        },
+                      search: false,                      //是否显示表格搜索
+                      strictSearch: true,
+                      showColumns: true,                  //是否显示所有的列（选择显示的列）
+                      showRefresh: true,                  //是否显示刷新按钮
+                      minimumCountColumns: 2,             //最少允许的列数
+                      clickToSelect: true,                //是否启用点击选中行
+                      //height: 500,                      //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                      uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+                      showToggle: true,                   //是否显示详细视图和列表视图的切换按钮
+                      cardView: false,                    //是否显示详细视图
+                      detailView: false,                  //是否显示父子表
+                      singleSelect: false, //开启单选,想要获取被选中的行数据必须要有该参数
+                       queryParams : function(params) {//上传服务器的参数
+                        var temp = {
+                            offset :params.offset + 0,// SQL语句起始索引
+                            page : params.limit,  // 每页显示数量
+                            username:params.username
+                        };
+                        return temp;
+                        },
+            columns: [
+                {
+                    align : 'center',
+                    checkbox: true
+                },{
+                field: 'name',
+                title: '任务名称'
+            },  {
+                field: 'createTime',
+                title: '任务时间'
+            }, {
+                field: 'vac.applyUser',
+                title: '申请人',
+                align: 'center'
+            }, {
+                field: 'vac.applyTime',
+                title: '申请时间'
+            }, {
+                    field: 'vac.days',
+                    title: '天数'
+                }, {
+                    field: 'vac.reason',
+                    title: '事由'
+                }, {
+                    field: 'doOpt',
+                    title: '操作',
+                    formatter : optFormatter
+                }]
+        });
+
+
+    })
+
+
+    function optFormatter(value, row, index) {
+        return [
+            '<button type="button"  onclick=\'passAudit("' + row.id + '",1)\'  class="subMenuAdd btn-small  btn-primary" style="margin-right:15px;"><i class="fa fa-plus" ></i>&nbsp;审核通过</button>',
+            '<button type="button"  onclick=\'passAudit("' + row.id + '",0)\' class="menuEdit btn-small   btn-pink" style="margin-right:15px;"><i class="fa fa-pencil-square-o" ></i>&nbsp;审核不通过</button>',
+
+        ].join('');
+
+    }
+
+
+
+
+
+
+
+    $(document).ready(function(e) {
+
+        $("button,a").on('click',function(){
+            //获取到 a标签里面配置 data-method
+            var methodName = $(this).data('method');
+            if(methodName){
+                doMethod[methodName]();
+            }
+        });
+        var doMethod = {
+
+            search:function(){
+                var username = $("#q_username").val();
+                var queryparam = {
+                    silent:true,
+                    query:{
+                        username:username
+                    }
+                };
+                $('#auditLeaveTable').bootstrapTable('refresh',queryparam);
+
+            },
+            leaveSave:function(){
+                //提交表单
+                var formParamObj =  $("#stuVacationForm").serializeObject();
+                    //验证通过
+                    $.ajax({
+                        url: "/startVac",
+                        async: false,
+                        type: "POST",
+                        data: formParamObj,
+                        success: function (data) {
+                            if (data.isSuccess) {
+                                $.confirm({
+                                    title: '温馨提示',
+                                    content: '请假成功',
+                                    type: 'green',
+                                    buttons: {
+                                        omg: {
+                                            text: '谢谢',
+                                            btnClass: 'btn-green',
+                                        }
+                                    }
+                                });
+                                $('#stuVacationModal').modal('hide');
+                                $('#auditLeaveTable').bootstrapTable('refresh');
+                            }
+
+                        }
+                    });
+
+
+
+            },
+            editXtSave(){
+                //提交表单
+                var formParamObj =  $("#stuXkEditForm").serializeObject();
+                //验证通过
+                $.ajax({
+                    url: "/student/editSaveStuXk",
+                    async: false,
+                    type: "POST",
+                    data: formParamObj,
+                    success: function (data) {
+                        if (data.isSuccess) {
+                            $.confirm({
+                                title: '温馨提示',
+                                content: '选课成功',
+                                type: 'green',
+                                buttons: {
+                                    omg: {
+                                        text: '谢谢',
+                                        btnClass: 'btn-green',
+                                    }
+                                }
+                            });
+                            $('#stuXkEditModal').modal('hide');
+                            $('#auditLeaveTable').bootstrapTable('refresh');
+                        } else if ("403" == data) {
+                            alert("你无权访问");
+                            $('#stuXkEditModal').modal('hide');
+                        }
+
+                    }
+                });
+
+            }
+        }
+
+    })
+
+
+
+
+    //删除
+    function passAudit(taskId, result){
+
+
+
+        $.ajax({
+            type: "post",
+            url: "/passAudit",
+            data: JSON.stringify({"id":taskId,
+                  "vac" : {
+                    "result" : result >= 1 ? "审核通过" : "审核拒绝"
+                }}),
+            contentType:'application/json',
+            success: function (data) {
+                if (data.isSuccess) {
+                    $("#auditLeaveTable").bootstrapTable("refresh");
+                }
+            }
+        });
+
+
+
+
+    }
+
+    //修改
+    function editStudent(){
+        var rows= $("#auditLeaveTable").bootstrapTable("getSelections");
+        if(rows.length<=0){
+            $.confirm({
+                title: '温馨提示',
+                content: '请选中一行进行操作',
+                type: 'green',
+                buttons: {
+                    omg: {
+                        text: '谢谢',
+                        btnClass: 'btn-green',
+                    }
+                }
+            });
+            return;
+        }
+        //修改数据
+        $('#stuEditModal').modal({
+            show: true,
+            backdrop:'static'
+        });
+
+        var userId = rows[0].id;
+        var username = rows[0].username;
+        var email = rows[0].email;
+        var tel = rows[0].tel;
+        var stunum = rows[0].stunum;
+        $("#e_id").val(userId);
+        $("#e_username").val(username);
+        $("#e_email").val(email);
+        $("#e_tel").val(tel);
+        $("#e_stunum").val(stunum);
+
+        var sexVal = rows[0].sex;
+        if(sexVal){
+            $("input[name='sex'][value='1']").prop("checked",true);
+        }else{
+            $("input[name='sex'][value='0']").prop("checked",true);
+        }
+    }
+
+    //学生选课 stuSelCourse
+    function stuSelCourse(){
+        //进行选课
+        var rows= $("#auditLeaveTable").bootstrapTable("getSelections");
+        if(rows.length<=0){
+            $.confirm({
+                title: '温馨提示',
+                content: '请选中一行进行操作',
+                type: 'green',
+                buttons: {
+                    omg: {
+                        text: '谢谢',
+                        btnClass: 'btn-green',
+                    }
+                }
+            });
+            return;
+        }
+        //弹出选课对话框
+        $('#stuXkEditModal').modal({show: true, backdrop:'static'});
+        var userId = rows[0].id;
+        var username = rows[0].username;
+        $("#xk_id").val(userId);
+        $("#xk_username").val(username);
+        //选择课程列表
+
+    }
+
+    //判断是否选中表格数据
+    function isCheckedData(){
+        var rows= $("#auditLeaveTable").bootstrapTable("getSelections");
+        if(rows.length<=0){
+            $.confirm({
+                title: '温馨提示',
+                content: '请选中一行进行操作',
+                type: 'green',
+                buttons: {
+                    omg: {
+                        text: '谢谢',
+                        btnClass: 'btn-green',
+                    }
+                }
+            });
+            return false;
+        }else{
+            return true
+        }
+    }
+
+
+
+
+
+</script>
+
+<style>
+    .my-container {
+        float: left;
+        display: inline-block;
+        margin-right:30px;
+    }
+
+    .myLabel-content ,.myText-content,.myBtn-content{
+        float: left;
+        display: inline-block;
+        line-height: 40px;
+        margin-left: 10px;
+    }
+    .myLabel-content,.myText-content input[type='text'],.myBtn-content .btn {
+        height: 38px;
+        font-size: 15px;
+    }
+    .myBtn-content .btn {
+        margin-bottom: 10px;
+        margin-right: 20px;
+    }
+</style>
+
+
+
+</body>
+</html>

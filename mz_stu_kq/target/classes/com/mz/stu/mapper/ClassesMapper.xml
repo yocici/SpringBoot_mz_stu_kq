@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.stu.mapper.ClassesMapper">
+
+	<sql id="whereSql">
+		<where>
+			<if test="name != null and name != ''">
+				and t.name like concat('%',#{name},'%')
+			</if>
+			<if test="tid != null">
+				and t.tid = #{tid}
+			</if>
+		</where>
+	</sql>
+
+	<!--分页-->
+	<select id="queryTotal" parameterType="ClassesQuery"
+			resultType="java.lang.Long">
+		select count(*)
+		from t_classes t
+		join t_user u on t.tid = u.id
+		<include refid="whereSql"></include>
+	</select>
+
+	<select id="queryData" parameterType="ClassesQuery"
+			resultMap="ClassesMap">
+		select t.*,u.id uid,u.username
+		from t_classes t
+		join t_user u on t.tid = u.id
+		<include refid="whereSql"></include>
+		order by id desc
+		limit #{offset},#{pageSize}
+	</select>
+
+	<resultMap id="ClassesMap" type="Classes">
+		<id property="id" column="id"></id>
+		<result property="name" column="name"></result>
+		<result property="createTime" column="createTime"></result>
+		<result property="type" column="type"></result>
+		<result property="user.id" column="uid"></result>
+		<result property="user.username" column="username"></result>
+	</resultMap>
+
+	<!-- 新增-->
+	<insert id="addClasses" parameterType="Classes" useGeneratedKeys="true"
+			keyProperty="id">
+		 insert into t_classes(name,createTime,tid)
+		 values(#{name},#{createTime},#{tid})
+	</insert>
+
+	<!-- 修改用户editSaveClasses-->
+	<update id="editSaveClasses" parameterType="Classes">
+		update t_classes
+		set name=#{name}
+		where id =#{id}
+	</update>
+
+
+	<!-- 批量删除 batchRemove(ids)-->
+	<delete id="batchRemove" parameterType="java.util.List">
+		delete from t_classes where id in
+		<foreach collection="list" index="index" item="item"
+				 separator="," open="(" close=")">
+			#{item,jdbcType=BIGINT}
+		</foreach>
+	</delete>
+
+
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+

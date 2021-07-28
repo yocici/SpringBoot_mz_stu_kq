@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>后台管理系统模板</title>
+    <link rel="icon" href="favicon.ico" type="image/ico">
+    <meta name="keywords" content="模板">
+    <meta name="description" content="后台管理系统的HTML模板。">
+    <meta name="author" content="SoulCoder">
+    <div th:include="~{views/common/include :: cssStyle }"></div>
+    <!-- 引入treegrid-->
+    <link rel="stylesheet" th:href="@{/static/js/plugins/bootstrap-table-treegrid/jquery.treegrid.min.css}">
+    <link rel="stylesheet" th:href="@{/static/js/plugins/icon/bootstrap-iconpicker.css}">
+
+    <link rel="stylesheet" th:href="@{/static/css/jquery-ui.min.css}">
+</head>
+<body>
+<div class="coder-layout-web">
+    <div class="coder-layout-container">
+        <!--左侧导航-->
+        <div th:include="~{views/common/include :: #asideStyle }"></div>
+        <!--End 左侧导航-->
+        <!--头部信息-->
+        <div th:include="~{views/common/include :: #headerStyle }"></div>
+        <!--End 头部信息-->
+        <!--页面主要内容-->
+        <main class="coder-layout-content">
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-toolbar clearfix">
+                                <!-- 查询搜索框start-->
+                                <div id="toolbar">
+                                    <div class="my-container">
+                                        <label class="myLabel-content">名称：</label>
+                                        <div class="myText-content">
+                                            <input id="q_name" name="name" type="text" class="form-control" placeholder="输入菜单名称">
+                                        </div>
+                                    </div>
+                                    <div class="myBtn-content">
+                                        <button id="search" type="button" class="btn itfxq-btn-search   " data-toggle="modal" data-method="search">
+                                            <i class="mdi mdi-account-search"></i>搜索</button>
+                                    </div>
+                                </div>
+                                <!-- 查询搜索框end-->
+                                <!-- 按钮区start-->
+                                <div class="toolbar-btn-action">
+                                    <button sec:authorize= "hasRole('管理员')" type="button" class="btn itfxq-btn-add" data-toggle="modal" data-method="addTopMenu" >
+                                        <i class="mdi mdi-plus"></i>新增一级菜单
+                                    </button>
+                                </div>
+                                <!-- 按钮区end-->
+                            </div>
+                            <div class="card-body">
+                                <div>
+                                    <h1></h1>
+                                      <table id="menuTable"></table>
+                                    <br/>
+
+                                </div>
+                                <!-- 新增一级菜单表单start-->
+                                <div class="modal fade" id="AddTopMenuModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span></button>
+                                                <h4 class="modal-title" id="exampleModalLabel">新增一级菜单</h4>
+                                            </div>
+                                            <form id="addTopMenuForm" method="post" enctype="multipart/form-data">
+                                                <div class="modal-body">
+                                                    <!-- 角色名称-->
+                                                    <div class="form-group">
+                                                        <label for="a_name" class="control-label">菜单名称：</label>
+                                                        <input type="text" class="form-control" name="name" id="a_name">
+                                                    </div>
+                                                    <!-- 角色描述-->
+                                                    <div class="form-group">
+                                                        <label  class="control-label" >菜单图标：</label>
+                                                        <input type="text" class="form-control" name="icon"  id="a_icon">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                                    <button type="button" data-method='saveTopMenu' class="btn btn-primary">保存</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 新增一级菜单结束-->
+
+
+
+                                <!-- 新增子级菜单form start-->
+                                <div class="modal fade" id="AddSubMenuModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span></button>
+                                                <h4 class="modal-title" >新增子菜单</h4>
+                                            </div>
+                                            <form id="addSubMenuForm" method="post" enctype="multipart/form-data">
+                                                <div class="modal-body">
+                                                    <!-- 父菜单-->
+                                                    <div class="form-group">
+                                                        <!-- 父菜单id-->
+                                                        <input type="hidden" class="form-control" name="pid" id="a_pid">
+                                                        <!-- 父菜单名称-->
+                                                        <label for="a_pname" class="control-label">父菜单名称：</label>
+                                                        <input type="text" class="form-control" name="pname" id="a_pname">
+                                                    </div>
+                                                    <!-- 子菜单-->
+                                                    <div class="form-group">
+                                                        <label for="a_name" class="control-label">子菜单名称：</label>
+                                                        <input type="text" class="form-control" name="name" id="a_subName">
+                                                    </div>
+                                                    <!-- 子菜单路径-->
+                                                    <div class="form-group">
+                                                        <label  class="control-label">子菜单路径：</label>
+                                                        <input type="text" class="form-control" name="url" id="a_suburl">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label  class="control-label">权限值：</label>
+                                                        <input type="text" class="form-control" name="permisisonName" id="a_permisisonName">
+                                                    </div>
+                                                    <!-- 子菜单图标-->
+                                                    <div class="form-group">
+                                                        <label  class="control-label">子菜单图标：</label>
+                                                        <input type="text" class="form-control" name="icon" id="a_subicon">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                                    <button type="button" data-method='saveSubMenu' class="btn btn-primary">保存</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 新增子级菜单form end-->
+
+
+                                <!-- 修改菜单form start-->
+                                <div class="modal fade" id="EditMenuModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span></button>
+                                                <h4 class="modal-title" >修改菜单</h4>
+                                            </div>
+                                            <form id="editMenuForm" method="post" enctype="multipart/form-data">
+                                                <div class="modal-body">
+                                                    <!-- 菜单-->
+                                                    <div class="form-group">
+                                                        <!-- 菜单id-->
+                                                        <input type="hidden" class="form-control" name="id" id="e_id">
+                                                        <!-- 菜单名称-->
+                                                        <label for="e_name" class="control-label">菜单名称：</label>
+                                                        <input type="text" class="form-control" name="name" id="e_name">
+                                                    </div>
+
+                                                    <!-- 菜单路径-->
+                                                    <div class="form-group">
+                                                        <label  class="control-label">菜单路径：</label>
+                                                        <input type="text" class="form-control" name="url" id="e_url">
+                                                    </div>
+
+                                                    <!-- 菜单图标-->
+                                                    <div class="form-group">
+                                                        <label  class="control-label">子菜单图标：</label>
+                                                        <input type="text" class="form-control" name="icon" id="e_icon">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                                    <button type="button" data-method='editMenu' class="btn btn-primary">保存</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 修改菜单form end-->
+                            </div>
+
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    </main>
+
+</div>
+</div>
+
+<div th:include="~{views/common/include :: #jsStyle}"></div>
+    <script type="text/javascript"  th:src="@{/static/js/jquery-ui.min.js}"></script>
+
+<script type="text/javascript"  th:src="@{/static/js/jquery.serialize-object.min.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/bootstrap-table-treegrid/bootstrap-table-treegrid.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/bootstrap-table-treegrid/jquery.treegrid.min.js}"></script>
+    <script type="text/javascript"  th:src="@{/static/js/plugins/icon/bootstrap-iconpicker.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    var menus =   [[${menus}]];
+    var $table = $('#menuTable');
+        // '[{"id":1,"pid":0,"name":"用户管理",url:'',icon:'',"permission":{}},' +
+    $(function() {
+
+        $("#AddTopMenuModal").draggable();//为模态对话框添加拖拽
+        $("#AddSubMenuModal").draggable();
+
+
+        //加载树形表格
+        $table.bootstrapTable({
+            data:menus,
+            idField: 'id',
+            dataType:'jsonp',
+            columns: [
+                { field: 'check',  checkbox: true, formatter: function (value, row, index) {
+                        if (row.check == true) {
+                            // console.log(row.serverName);
+                            //设置选中
+                            return {  checked: true };
+                        }
+                    }
+                },
+                { field: 'name',  title: '名称' },
+                { field: 'url',  title: '路径' },
+                { field: 'icon',  title: '图标',formatter:iconFormatter },
+                // {field: 'id', title: '编号', sortable: true, align: 'center'},
+                {field: 'pid', title: '所属上级',formatter:'pidFormatter'},
+                { field: 'permission',  title: '权限值', sortable: true,  align: 'center', formatter: 'permissionFormatter'  },
+                { field: 'operate', title: '操作', align: 'center', events : operateEvents, formatter: 'operateFormatter' },
+            ],
+
+            // bootstrap-table-treegrid.js 插件配置 -- start
+
+            //在哪一列展开树形
+            treeShowField: 'name',
+            //指定父id列
+            parentIdField: 'pid',
+
+            onResetView: function(data) {
+                //console.log('load');
+                $table.treegrid({
+                    initialState: 'collapsed',// 所有节点都折叠
+                    // initialState: 'expanded',// 所有节点都展开，默认展开
+                    treeColumn: 1,
+                    expanderExpandedClass: 'mdi mdi-minus',  //图标样式
+                    expanderCollapsedClass: 'mdi mdi-plus',
+                    onChange: function() {
+                        $table.bootstrapTable('resetWidth');
+                    }
+                });
+
+                //只展开树形的第一级节点
+                $table.treegrid('getRootNodes').treegrid('expand');
+
+            },
+            onCheck:function(row){
+                var datas = $table.bootstrapTable('getData');
+                // 勾选子类
+                selectChilds(datas,row,"id","pid",true);
+
+                // 勾选父类
+                selectParentChecked(datas,row,"id","pid")
+
+                // 刷新数据
+                $table.bootstrapTable('load', datas);
+            },
+
+            onUncheck:function(row){
+                var datas = $table.bootstrapTable('getData');
+                selectChilds(datas,row,"id","pid",false);
+                $table.bootstrapTable('load', datas);
+            },
+            // bootstrap-table-treetreegrid.js 插件配置 -- end
+        });
+    });
+
+    $(function(){
+        //绑定事件
+        $("button,a").on('click',function(){
+            //获取到 a标签里面配置 data-method
+            var methodName = $(this).data('method');
+            if(methodName){
+                doMethod[methodName]();
+            }
+        });
+        var doMethod={
+            addTopMenu:function(){
+                //弹出form表单
+                $('#AddTopMenuModal').modal({
+                    show: true,
+                    backdrop:'static'
+                });
+                //bootstrap icon初始化
+                $("#a_icon").val("")
+                $("#a_icon").iconpicker();
+            },
+            saveTopMenu:function(){
+                //保存顶级的菜单
+                var addTopMenuFormObj =  $("#addTopMenuForm").serializeObject();
+                addTopMenuFormObj.icon = $("#a_icon").val()
+                $.ajax({
+                    type: "post",
+                    url: "/menu/addTopMenu",
+                    dataType : "json",
+                    data: JSON.stringify(addTopMenuFormObj),
+                    contentType:'application/json;charset=utf-8',
+                    success: function (data) {
+                        if (data.isSuccess) {
+                            $.confirm({
+                                title: '温馨提示',
+                                content: '保存成功',
+                                type: 'green',
+                                buttons: {
+                                    omg: {
+                                        text: '谢谢',
+                                        btnClass: 'btn-green',
+                                        action:function(){
+                                            $('#AddTopMenuModal').modal('hide');
+                                            window.location.href="/menu/index";
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            },
+            saveSubMenu:function(){
+                //保存子级的菜单
+                var addSubMenuFormObj =  $("#addSubMenuForm").serializeObject();
+                console.log(addSubMenuFormObj)
+                var sendObj = {
+                    name:addSubMenuFormObj.name,
+                    pid:addSubMenuFormObj.pid,
+                    icon:addSubMenuFormObj.icon,
+                    url:addSubMenuFormObj.url,
+                    permission:{
+                        name:addSubMenuFormObj.permisisonName,
+                        title:addSubMenuFormObj.name
+                    }
+                }
+                $.ajax({
+                    type: "post",
+                    url: "/menu/addSubMenu",
+                    dataType : "json",
+                    data: JSON.stringify(sendObj),
+                    contentType:'application/json;charset=utf-8',
+                    success: function (data) {
+                        if (data.isSuccess) {
+                            $.confirm({
+                                title: '温馨提示',
+                                content: '保存成功',
+                                type: 'green',
+                                buttons: {
+                                    omg: {
+                                        text: '谢谢',
+                                        btnClass: 'btn-green',
+                                        action:function(){
+                                            $('#AddSubMenuModal').modal('hide');
+                                            window.location.href="/menu/index";
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            },
+            editMenu:function(){
+
+                var editMenuFormObj =  $("#editMenuForm").serializeObject();
+
+                var sendObj = {
+                    name:editMenuFormObj.name,
+                    id:editMenuFormObj.id,
+                    icon:editMenuFormObj.icon,
+                    url:editMenuFormObj.url
+                }
+                $.ajax({
+                    type: "post",
+                    url: "/menu/editMenu",
+                    dataType : "json",
+                    data: JSON.stringify(sendObj),
+                    contentType:'application/json;charset=utf-8',
+                    success: function (data) {
+                        if (data.isSuccess) {
+                            $.confirm({
+                                title: '温馨提示',
+                                content: '保存成功',
+                                type: 'green',
+                                buttons: {
+                                    omg: {
+                                        text: '谢谢',
+                                        btnClass: 'btn-green',
+                                        action:function(){
+                                            $('#EditMenuModal').modal('hide');
+                                            window.location.href="/menu/index";
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+
+            }
+
+        }
+    })
+
+    // 格式化按钮
+    function operateFormatter(value, row, index) {
+        return [
+            '<button type="button"  class="subMenuAdd btn-small  btn-save" style="margin-right:15px;border: 0"><i class="mdi mdi-plus" ></i>&nbsp;新增</button>',
+            '<button type="button"  class="menuEdit btn-small   btn-pink" style="margin-right:15px;border: 0"><i class="mdi mdi-table-edit" ></i>&nbsp;修改</button>',
+            '<button type="button" class="menuDelete btn-small   btn-del" style="margin-right:15px;border: 0"><i class="mdi mdi-delete" ></i>&nbsp;删除</button>'
+        ].join('');
+
+    }
+    // 格式化类型
+    function typeFormatter(value, row, index) {
+        if (value === 'menu') {  return '菜单';  }
+        if (value === 'button') {  return '按钮'; }
+        if (value === 'api') {  return '接口'; }
+        return '-';
+    }
+    //pidFormatter
+    function pidFormatter(value, row, index) {
+
+        return value?value:0;
+    }
+    function iconFormatter(value,row,index){
+        if(row.icon){
+            return "<i class='"+value+"'></i>"
+        }
+    }
+    // 格式化权限值
+    function permissionFormatter(value, row, index) {
+        var permission = value;
+        if (permission) {
+            return  permission.name;
+        }
+    }
+
+    //初始化操作按钮的方法
+    window.operateEvents = {
+        'click .subMenuAdd': function (e, value, row, index) {
+            add(row);
+        },
+        'click .menuDelete': function (e, value, row, index) {
+            del(row);
+        },
+        'click .menuEdit': function (e, value, row, index) {
+            update(row);
+        }
+    };
+</script>
+    <script>
+        /**
+         * 选中父项时，同时选中子项
+         * @param datas 所有的数据
+         * @param row 当前数据
+         * @param id id 字段名
+         * @param pid 父id字段名
+         */
+        function selectChilds(datas,row,id,pid,checked) {
+            for(var i in datas){
+                if(datas[i][pid] == row[id]){
+                    datas[i].check=checked;
+                    selectChilds(datas,datas[i],id,pid,checked);
+                };
+            }
+        }
+
+        function selectParentChecked(datas,row,id,pid){
+            for(var i in datas){
+                if(datas[i][id] == row[pid]){
+                    datas[i].check=true;
+                    selectParentChecked(datas,datas[i],id,pid);
+                };
+            }
+        }
+
+        function test() {
+            var selRows = $table.bootstrapTable("getSelections");
+            if(selRows.length == 0){
+                alert("请至少选择一行");
+                return;
+            }
+
+            var postData = "";
+            $.each(selRows,function(i) {
+                postData +=  this.id;
+                if (i < selRows.length - 1) {
+                    postData += "， ";
+                }
+            });
+            alert("你选中行的 id 为："+postData);
+
+        }
+
+        function add(row) {
+            console.log(row);
+            if(row.pid){
+                $.confirm({
+                    title: '温馨提示',
+                    content: '菜单只支持二级菜单!!',
+                    type: 'red',
+                    buttons: {
+                        close: {
+                            text: '谢谢'
+                        }
+                    }
+                });
+                return;
+            }
+            //这个id 相当于pid
+            $("#a_pid").val(row.id);
+            $("#a_pname").val(row.name);
+            //弹出form表单
+            $('#AddSubMenuModal').modal({
+                show: true,
+                backdrop:'static'
+            });
+
+            $("#a_subicon").iconpicker();
+
+        }
+        function del(row) {
+            $.ajax({
+                type: "post",
+                url: "/menu/deleteMenu",
+                data: {"id":row.id},
+                success: function (data) {
+                    if (data.isSuccess) {
+                        window.location.href="/menu/index";
+                    }
+                }
+            });
+        }
+        function update(row) {
+            $('#EditMenuModal').modal({
+                show: true,
+                backdrop:'static'
+            });
+
+            $("#e_id").val(row.id);
+            $("#e_name").val(row.name);
+            $("#e_url").val(row.url);
+            $("#e_icon").val(row.icon);
+        }
+
+
+    </script>
+
+    <style>
+        .md-header{
+            margin-left: 0px;
+        }
+        .my-container {
+            float: left;
+            display: inline-block;
+            margin-right:30px;
+        }
+
+        .myLabel-content ,.myText-content,.myBtn-content{
+            float: left;
+            display: inline-block;
+            line-height: 40px;
+            margin-left: 10px;
+        }
+        .myLabel-content,.myText-content input[type='text'],.myBtn-content .btn {
+            height: 38px;
+            font-size: 15px;
+        }
+        .myBtn-content .btn {
+            margin-bottom: 10px;
+            margin-right: 20px;
+        }
+
+</style>
+
+
+
+
+</body>
+</html>

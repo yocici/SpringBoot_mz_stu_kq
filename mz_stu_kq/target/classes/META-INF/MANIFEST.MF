@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Implementation-Title: mz_stu_kq
+Implementation-Version: 1.0-SNAPSHOT
+Built-By: chenxu
+Implementation-Vendor-Id: org.example
+Build-Jdk: 1.8.0_212
+Implementation-URL: https://projects.spring.io/spring-boot/#/spring-bo
+ ot-starter-parent/mz_stu_kq
+Created-By: Maven Integration for Eclipse
+

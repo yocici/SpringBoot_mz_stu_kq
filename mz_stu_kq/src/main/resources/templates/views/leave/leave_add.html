@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+                 xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>后台管理系统模板</title>
+    <link rel="icon" href="favicon.ico" type="image/ico">
+    <meta name="keywords" content="模板">
+    <meta name="description" content="后台管理系统">
+    <meta name="author" content="SoulCoder">
+    <div th:include="~{views/common/include :: cssStyle }"></div>
+</head>
+<body>
+<div class="coder-layout-web">
+    <div class="coder-layout-container">
+        <!--左侧导航-->
+        <div th:include="~{views/common/include :: #asideStyle }"></div>
+        <!--End 左侧导航-->
+        <!--头部信息-->
+        <div th:include="~{views/common/include :: #headerStyle }"></div>
+        <!--End 头部信息-->
+        <!--页面主要内容-->
+        <main class="coder-layout-content"  >
+
+            <div class="container-fluid"
+                 style="background-color:transparent;
+                         padding-top: 0px;
+                         padding-bottom: 0px;">
+                <div class="row">
+                    <div class="col-lg-24">
+                        <div class="card">
+                            <!-- 新增表单start-->
+                            <div class="modal-dialog"
+                                 style="float:left;
+                                     margin-top:0px;
+                                     width: 100%;
+                                     background-color: black;
+                                        color:#ff8f2b;" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <h4 class="modal-title" >
+                                            <span style="font-size: 18px;color:#ff8f2b;font-weight: bold">您的位置: 申请请假</span>
+                                        </h4>
+                                    </div>
+                                    <form id="stuLeaveForm" method="post" enctype="multipart/form-data">
+                                        <div class="modal-body">
+                                            <input type="hidden" id="e_id" class="form-control" name="id">
+
+                                            <div class="form-group">
+                                                <label  class="control-label">请假天数:</label>
+                                                <div class="clearfix">
+                                                    <input type="text"  class="form-control" name="num" >
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">请假原因：</label>
+                                                <input type="text"  class="form-control" name="content" >
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">审批老师：</label>
+                                                <input type="hidden"  th:value="${auditor.id}" name="auditid"  class="form-control"  >
+                                                <input type="text" readonly th:value="${auditor.username}"  class="form-control"  >
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                <button type="button" data-method='saveLeave' class="btn btn-primary">保存</button>
+                                            </div>
+
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- 新增表单结束-->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+    </div>
+
+    </main>
+        <!--End 页面主要内容-->
+    </div>
+</div>
+
+<div th:include="~{views/common/include :: #jsStyle}"></div>
+<script type="text/javascript"  th:src="@{/static/js/jquery.serialize-object.min.js}"></script>
+
+<!--图表插件-->
+<script type="text/javascript">
+
+    $(document).ready(function(e) {
+
+        $("button,a").on('click',function(){
+            //获取到 a标签里面配置 data-method
+            var methodName = $(this).data('method');
+            if(methodName){
+                doMethod[methodName]();
+            }
+        });
+
+        var doMethod = {
+            saveLeave:function(){
+                var addLeaveParamObj =  $("#stuLeaveForm").serializeObject();
+                var paramObj =  {"content":addLeaveParamObj.content,
+                                 "num":addLeaveParamObj.num,
+                                  "auditid":addLeaveParamObj.auditid};
+
+                $.ajax({
+                    type: "post",
+                    url: "/leave/addLeave",
+                    data: paramObj,
+                    success: function (data) {
+                        if (data.isSuccess) {
+                            $.confirm({
+                                title: '温馨提示',
+                                content: '保存成功',
+                                type: 'green',
+                                buttons: {
+                                    omg: {
+                                        text: '谢谢',
+                                        btnClass: 'btn-green',
+                                        action:function(){
+                                            //调整请假记录页面
+                                            window.location.href='/leave/index'
+                                        }
+                                    }
+                                }
+                            });
+                        }else{
+                            $.confirm({
+                                title: '温馨提示',
+                                content: '保存失败',
+                                type: 'red',
+                                buttons: {
+                                    omg: {
+                                        text: '谢谢',
+                                        btnClass: 'btn-red'
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
+
+    });
+
+
+</script>
+
+
+
+<style>
+    .my-container {
+        float: left;
+        display: inline-block;
+        margin-right:30px;
+    }
+
+    .myLabel-content ,.myText-content,.myBtn-content{
+        float: left;
+        display: inline-block;
+        line-height: 40px;
+        margin-left: 10px;
+    }
+    .myLabel-content,.myText-content input[type='text'],.myBtn-content .btn {
+        height: 38px;
+        font-size: 15px;
+    }
+    .myBtn-content .btn {
+        margin-bottom: 10px;
+        margin-right: 20px;
+    }
+</style>
+
+
+
+</body>
+</html>

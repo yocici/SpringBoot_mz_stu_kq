@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.stu.mapper.KqMapper">
+
+	<select id="queryAll" resultType="Kq">
+		select * from t_stu_kq
+	</select>
+
+	<sql id="whereSql">
+		<where>
+			<if test="username != null and username != ''">
+				and u.username like concat('%',#{username},'%')
+			</if>
+			<if test="userid != null ">
+				and tc.userid = #{userid}
+			</if>
+			<if test="tid != null ">
+				and tc.tid = #{tid}
+			</if>
+		</where>
+	</sql>
+
+	<!--分页-->
+	<select id="queryTotal" parameterType="KqQuery"
+			resultType="java.lang.Long">
+		select count(*)
+		from t_stu_kq tc
+		join t_user u on tc.userid = u.id
+		<include refid="whereSql"></include>
+	</select>
+
+	<select id="queryData" parameterType="KqQuery"
+			resultMap="KqMap">
+		select tc.*,u.id uid, u.username
+		from t_stu_kq tc
+		join t_user u on tc.userid = u.id
+		<include refid="whereSql"></include>
+		order by tc.id desc
+		limit #{offset},#{pageSize}
+	</select>
+	<resultMap id="KqMap" type="Kq">
+		<id property="id" column="id"></id>
+		<result property="upClassTime" column="upClassTime"></result>
+		<result property="downClassTime" column="downClassTime"></result>
+		<result property="userid" column="userid"></result>
+		<result property="user.id" column="uid"></result>
+		<result property="user.username" column="username"></result>
+	</resultMap>
+
+	<!-- 上课考勤 -->
+	<insert id="upKq"  parameterType="Kq">
+		insert into t_stu_kq(upClassTime,userid,currentTime,tid,isup) values (#{upClassTime},#{userid},#{currentTime},#{tid},1)
+	</insert>
+
+	<!-- 下课考勤-->
+	<update id="downKq"  parameterType="Kq">
+		update t_stu_kq
+		set downClassTime=#{downClassTime},isdown=1
+		where userid=#{userid}
+		<if test="currentTime != null ">
+			and currentTime &gt;= DATE_FORMAT(#{currentTime},'%Y-%m-%d')
+		</if>
+	</update>
+
+
+<!--	判断是否已经上课打过卡-->
+	<select id="queryRecoredByUserid" parameterType="Kq"
+			resultType="Kq">
+			select *
+			from t_stu_kq
+			where userid=#{userid}
+			and isup=1
+			and DATE_FORMAT(upClassTime,'%Y-%m-%d') = DATE_FORMAT(#{currentTime},'%Y-%m-%d')
+	</select>
+
+	<select id="queryDownRecoredByUserid" parameterType="Kq"
+			resultType="Kq">
+			select *
+			from t_stu_kq
+			where userid=#{userid}
+			and isdown=1
+			and DATE_FORMAT(downClassTime,'%Y-%m-%d') = DATE_FORMAT(#{currentTime},'%Y-%m-%d')
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
