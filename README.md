@@ -1,1 +1,1 @@
-# mz_stu_kq
+一个简单的springBoot项目
